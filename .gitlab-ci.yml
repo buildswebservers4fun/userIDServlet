@@ -7,7 +7,6 @@ build:
   script:
     - gradle build --info
   tags:
-    - linux
     - java
     - gradle
 
@@ -16,7 +15,6 @@ deploy:
   script:
     - gradle publish
   tags:
-    - linux
     - java
     - gradle
   only:
