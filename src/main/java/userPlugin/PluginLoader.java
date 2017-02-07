@@ -3,6 +3,7 @@ package userPlugin;
 import dynamic.IPluginLoader;
 import dynamic.IServlet;
 import dynamic.PluginRouter;
+import handlers.UserServlet;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,13 +13,10 @@ import java.nio.file.Paths;
  */
 public class PluginLoader implements IPluginLoader {
 
+    public static final Path basePath = Paths.get("/UserID/");
+
     public void init(PluginRouter router, String rootDirectory) {
-        Path path = Paths.get("/UserID/");
-
-        //TODO grab real servlet
-        IServlet servlet = null;
-
-        // TODO uncomment
-        // router.addRoute(path, servlet);
+        IServlet servlet = new UserServlet();
+        router.addRoute(basePath, servlet);
     }
 }
