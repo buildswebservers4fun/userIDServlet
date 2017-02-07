@@ -155,7 +155,9 @@ task publishToTest(dependsOn: jar) << {
             println "Transfering file from local build/distributions to remote /tmp/userPlugin ..."
             put from: "${buildDir}/libs/UserWebApp-${version}.jar", into: '/tmp/userPlugin'
             println "Removing old versions of plugin"
-            execute('rm UserWebApp-*.jar || true', pty: true)
+            try {
+                remove '/home/csse/webserver/plugins/UserWebApp-*.jar'
+            } catch(Exception) {}
             println "Copying data from the temp folder to the plugin folder ..."
             execute('cp /tmp/userPlugin/* /home/csse/webserver/plugins', pty: true)
             println "Done! Clearing the tmp folder ..."
@@ -178,7 +180,9 @@ task publishToProd(dependsOn: jar) << {
             println "Transfering file from local build/distributions to remote /tmp/userPlugin ..."
             put from: "${buildDir}/libs/UserWebApp-${version}.jar", into: '/tmp/userPlugin'
             println "Removing old versions of plugin"
-            execute('rm UserWebApp-*.jar || true', pty: true)
+            try {
+                remove '/home/csse/webserver/plugins/UserWebApp-*.jar'
+            } catch(Exception) {}
             println "Copying data from the temp folder to the plugin folder ..."
             execute('cp /tmp/userPlugin/* /home/csse/webserver/plugins', pty: true)
             println "Done! Clearing the tmp folder ..."

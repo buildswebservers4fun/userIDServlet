@@ -3,7 +3,6 @@ package handlers;
 import java.io.File;
 import java.util.HashMap;
 
-import app.Path;
 import dynamic.handler.IGetHandler;
 import protocol.HttpRequest;
 import protocol.Protocol;
@@ -16,8 +15,7 @@ public class NewHandler implements IGetHandler {
 	public NewHandler(String rootDirectory) {
 		this.rootDirectory = rootDirectory;
 	}
-	
-	@Path(path = "", method = "GET")
+
 	public IHttpResponse handleGet(HttpRequest request) {
 		IHttpResponse response;
 		// Map<String, String> header = request.getHeader();
