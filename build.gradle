@@ -1,3 +1,7 @@
+plugins {
+    id 'org.hidetake.ssh' version '2.7.0'
+}
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
@@ -8,7 +12,7 @@ apply plugin: 'application'
 
 
 group 'edu.rosehulman.csse477.buildswebservers4fun'
-mainClassName = "Library"
+mainClassName = "userPlugin.PluginLoader"
 
 if (System.getenv("CI_BUILD_TAG") != null) {
     version = "${System.getenv("CI_BUILD_TAG")}"
@@ -16,7 +20,8 @@ if (System.getenv("CI_BUILD_TAG") != null) {
     version = '1.0.0-SNAPSHOT'
 }
 
-sourceCompatibility = 1.5
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     maven {
@@ -26,27 +31,16 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
 
-    compile(group: 'edu.rosehulman.csse477.buildswebservers4fun', name: 'webserver3000', version: '1.1.0')
+    compile(group: 'edu.rosehulman.csse477.buildswebservers4fun', name: 'webserver3000', version: '1.1.7')
 }
 
 jar {
     manifest {
         attributes "Implementation-Title": "UserWebApp",
-                "Implementation-Version": "${version}"
-    }
-}
-task fatJar(type: Jar) {
-    manifest {
-        attributes 'Implementation-Version': version
+                "Implementation-Version": "${version}",
+                "Main-Class": "${mainClassName}"
     }
     baseName = 'UserWebApp'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
-
-task prod(dependsOn: [clean, build, test, fatJar]) {
-    build.mustRunAfter clean
-    fatJar.mustRunAfter test
 }
 
 uploadArchives {
@@ -132,3 +126,64 @@ task codeCoverageInfo (dependsOn: jacocoTestReport) {
     }
 }
 jacocoTestReport.finalizedBy(codeCoverageInfo)
+
+// SSH Publishing
+ssh.settings { knownHosts = allowAnyHosts }
+remotes {
+    prod {
+        host = '477-38.csse.rose-hulman.edu'
+        user = System.getenv('SSH_USER')
+        password = System.getenv('SSH_PASSWORD')
+    }
+    test {
+        host = '477-33.csse.rose-hulman.edu'
+        user = System.getenv('SSH_USER')
+        password = System.getenv('SSH_PASSWORD')
+    }
+}
+
+task publishToTest(dependsOn: jar) << {
+    ssh.run {
+        session(remotes.test) {
+            println "Checking if remote /tmp/userPlugin exists ..."
+            def result = execute('if test -d /tmp/userPlugin; then echo "exists"; fi')
+            if(result != "exists") {
+                println("Remote /tmp/userPlugin does not exist, creating a new one...")
+                execute('mkdir -p /tmp/userPlugin')
+                println("Remote /tmp/userPlugin created!")
+            }
+            println "Transfering file from local build/distributions to remote /tmp/userPlugin ..."
+            put from: "${buildDir}/libs/UserWebApp-${version}.jar", into: '/tmp/userPlugin'
+            println "Removing old versions of plugin"
+            execute('rm UserWebApp-*.jar || true', pty: true)
+            println "Copying data from the temp folder to the plugin folder ..."
+            execute('cp /tmp/userPlugin/* /home/csse/webserver/plugins', pty: true)
+            println "Done! Clearing the tmp folder ..."
+            execute('rm -rf /tmp/userPlugin')
+            println "All done!"
+        }
+    }
+}
+
+task publishToProd(dependsOn: jar) << {
+    ssh.run {
+        session(remotes.prod) {
+            println "Checking if remote /tmp/userPlugin exists ..."
+            def result = execute('if test -d /tmp/userPlugin; then echo "exists"; fi')
+            if(result != "exists") {
+                println("Remote /tmp/userPlugin does not exist, creating a new one...")
+                execute('mkdir -p /tmp/userPlugin')
+                println("Remote /tmp/userPlugin created!")
+            }
+            println "Transfering file from local build/distributions to remote /tmp/userPlugin ..."
+            put from: "${buildDir}/libs/UserWebApp-${version}.jar", into: '/tmp/userPlugin'
+            println "Removing old versions of plugin"
+            execute('rm UserWebApp-*.jar || true', pty: true)
+            println "Copying data from the temp folder to the plugin folder ..."
+            execute('cp /tmp/userPlugin/* /home/csse/webserver/plugins', pty: true)
+            println "Done! Clearing the tmp folder ..."
+            execute('rm -rf /tmp/userPlugin')
+            println "All done!"
+        }
+    }
+}
