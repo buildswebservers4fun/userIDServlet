@@ -19,4 +19,9 @@ public class PluginLoader implements IPluginLoader {
         IServlet servlet = new UserServlet();
         router.addRoute(basePath, servlet);
     }
+
+    @Override
+    public void unload(PluginRouter router) {
+        router.removeRoute(basePath);
+    }
 }

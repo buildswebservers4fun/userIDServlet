@@ -21,21 +21,21 @@ import java.util.Map;
  */
 public class UserServlet implements IServlet {
 
-    Map<Path, User> users;
+    Map<Integer, User> users;
+    private int count = 0;
 
     public UserServlet() {
-        users = new Hashtable<Path, User>();
+        users = new Hashtable<Integer, User>();
     }
 
     @Override
     public IHttpResponse handleDelete(HttpRequest request) {
-        String body = new String(request.getBody());
-
         Path requestPath = Paths.get(request.getUri());
         Path relativePath = PluginLoader.basePath.relativize(requestPath);
 
         try {
-            User user = users.get(relativePath);
+            int index = Integer.parseInt(relativePath.toString());
+            User user = users.get(index);
 
             if(user == null)
                 return build404Response();
@@ -44,19 +44,20 @@ public class UserServlet implements IServlet {
             return build200Response("");
         } catch(JsonSyntaxException e) {
             // Throw 400 for invalid json
+        } catch (NumberFormatException e) {
+            return build404Response();
         }
         return null;
     }
 
     @Override
     public IHttpResponse handleGet(HttpRequest request) {
-        String body = new String(request.getBody());
-
         Path requestPath = Paths.get(request.getUri());
         Path relativePath = PluginLoader.basePath.relativize(requestPath);
 
         try {
-            User user = users.get(relativePath);
+            int index = Integer.parseInt(relativePath.toString());
+            User user = users.get(index);
 
             if(user == null)
                 return build404Response();
@@ -65,32 +66,53 @@ public class UserServlet implements IServlet {
             return build200Response(gson.toJson(user));
         } catch(JsonSyntaxException e) {
             // Throw 400 for invalid json
+        } catch (NumberFormatException e) {
+            return build404Response();
         }
         return null;
     }
 
     @Override
     public IHttpResponse handleHead(HttpRequest request) {
-        String body = new String(request.getBody());
-
         Path requestPath = Paths.get(request.getUri());
         Path relativePath = PluginLoader.basePath.relativize(requestPath);
 
         try {
-            User user = users.get(relativePath);
+            int index = Integer.parseInt(relativePath.toString());
+            User user = users.get(index);
 
             if(user == null)
                 return build404Response();
             return build200Response("");
         } catch(JsonSyntaxException e) {
             // Throw 400 for invalid json
+        } catch (NumberFormatException e) {
+            return build404Response();
         }
         return null;
     }
 
     @Override
     public IHttpResponse handlePost(HttpRequest request) {
-        return handlePut(request);
+        String body = new String(request.getBody());
+
+        Path requestPath = Paths.get(request.getUri());
+
+        if(!requestPath.equals(PluginLoader.basePath)){
+            // TODO: Return operation not allowed
+            return null;
+        }
+        try {
+            Gson gson = new Gson();
+            User user = gson.fromJson(body, User.class);
+            user.id = count;
+            users.put(count++,user);
+
+            return build200Response(gson.toJson(user));
+        } catch(JsonSyntaxException e) {
+            // Will Throw 400 for invalid json
+        }
+        return null;
     }
 
     @Override
@@ -101,14 +123,21 @@ public class UserServlet implements IServlet {
         Path relativePath = PluginLoader.basePath.relativize(requestPath);
 
         try {
+            int index = Integer.parseInt(relativePath.toString());
+            if(!users.containsKey(index)) {
+                return build404Response();
+            }
+
             Gson gson = new Gson();
             User user = gson.fromJson(body, User.class);
-
-            users.put(relativePath,user);
+            user.id = index;
+            users.put(index,user);
 
             return build200Response(gson.toJson(user));
         } catch(JsonSyntaxException e) {
-            // Throw 400 for invalid json
+            // Will Throw 400 for invalid json
+        } catch (NumberFormatException e) {
+            return build404Response();
         }
         return null;
     }
