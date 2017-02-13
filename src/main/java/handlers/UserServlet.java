@@ -56,8 +56,7 @@ public class UserServlet implements IServlet {
         Path relativePath = PluginLoader.basePath.relativize(requestPath);
 
         try {
-            if (relativePath.toString().equals("") || relativePath.toString() == null) {
-                // return all users
+            if (requestPath.equals(PluginLoader.basePath)) {   // return all users
                 if (users == null) {
                     return build404Response();
                 }
@@ -88,7 +87,7 @@ public class UserServlet implements IServlet {
         Path relativePath = PluginLoader.basePath.relativize(requestPath);
 
         try {
-            if (relativePath.toString().equals("") || relativePath.toString() == null) {
+            if (requestPath.equals(PluginLoader.basePath)) {   // return all users
                 // return all users
                 if (users == null) {
                     return build404Response();
