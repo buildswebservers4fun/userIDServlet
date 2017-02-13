@@ -61,7 +61,7 @@ public class UserServlet implements IServlet {
                     return build404Response();
                 }
                 Gson gson = new Gson();
-                return build200Response(gson.toJson(users));
+                return build200Response(gson.toJson(users.values()));
             }
 
             int index = Integer.parseInt(relativePath.toString());
