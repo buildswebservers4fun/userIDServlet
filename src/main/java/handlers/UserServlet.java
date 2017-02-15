@@ -40,7 +40,7 @@ public class UserServlet implements IServlet {
             if (user == null)
                 return build404Response();
 
-            users.remove(relativePath);
+            users.remove(index);
             return build200Response("");
         } catch (JsonSyntaxException e) {
             // Throw 400 for invalid json
