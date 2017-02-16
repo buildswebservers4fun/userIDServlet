@@ -164,7 +164,10 @@ public class UserServlet implements IServlet {
         HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
         responseBuilder.setStatus(Protocol.OK_CODE);
         responseBuilder.setPhrase(Protocol.OK_TEXT);
-        responseBuilder.setHeaders(new HashMap<String, String>());
+
+        HashMap headers = new HashMap<String, String>();
+        headers.put("Access-Control-Allow-Origin", "*");
+        responseBuilder.setHeaders(headers);
         responseBuilder.setConnection(Protocol.CLOSE);
         responseBuilder.setBody(body);
         return responseBuilder.build();
