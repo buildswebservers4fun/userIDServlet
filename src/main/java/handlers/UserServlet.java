@@ -167,7 +167,7 @@ public class UserServlet implements IServlet {
 
         HashMap headers = new HashMap<String, String>();
         headers.put("Access-Control-Allow-Origin", "*");
-        headers.put("Access-Control-Allow-Methods", "*");
+        headers.put("Access-Control-Allow-Methods", "HEAD, GET, DELETE, POST, PUT");
         responseBuilder.setHeaders(headers);
         responseBuilder.setConnection(Protocol.CLOSE);
         responseBuilder.setBody(body);
